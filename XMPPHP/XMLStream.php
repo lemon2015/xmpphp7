@@ -358,7 +358,6 @@ class XMPPHP_XMLStream {
     }
     $this->reconnect = false;
     $this->send($this->stream_end);
-    @fflush($this->socket);
     $this->sent_disconnect = true;
     $this->processUntil('end_stream', 5);
     $this->disconnected = true;
@@ -726,6 +725,8 @@ class XMPPHP_XMLStream {
       $this->doReconnect();
       return false;
     }
+    //add fflush method to prevent msg blocked in socket buffer ，causing delay, especially in long run env 
+    @fflush($this->socket);
     $this->log->log("Successfully sent $sentbytes bytes.", XMPPHP_Log::LEVEL_VERBOSE);
     return $sentbytes;
   }
