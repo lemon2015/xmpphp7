@@ -42,11 +42,6 @@ require_once dirname(__FILE__) . "/Roster.php";
  * @version	$Id$
  */
 class XMPPHP_XMPP extends XMPPHP_XMLStream {
-
-  /**
-   * @var string
-   */
-  public $server;
   /**
    * @var string
    */
@@ -127,7 +122,7 @@ class XMPPHP_XMPP extends XMPPHP_XMLStream {
     $this->roster = new Roster();
     $this->track_presence = true;
 
-    $this->stream_start = '<stream:stream to="' . $server . '" xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client" version="1.0">';
+    $this->stream_start = '<stream:stream to="' . $host . '" xmlns:stream="http://etherx.jabber.org/streams" xmlns="jabber:client" version="1.0">';
     $this->stream_end = '</stream:stream>';
     $this->default_ns = 'jabber:client';
 
@@ -480,7 +475,10 @@ class XMPPHP_XMPP extends XMPPHP_XMLStream {
    */
   protected function tls_proceed_handler($xml) {
     $this->log->log("Starting TLS encryption");
-    stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_SSLv23_CLIENT);
+    $res = stream_socket_enable_crypto($this->socket, true, STREAM_CRYPTO_METHOD_SSLv23_CLIENT);
+    if(!$res){
+        $this->log->log("TLS encryption failed");
+    }
     $this->reset();
   }
 

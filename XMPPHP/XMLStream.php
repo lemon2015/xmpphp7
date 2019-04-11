@@ -168,6 +168,11 @@ class XMPPHP_XMLStream {
    * @var integer
    */
   protected $reconnectTimeout = 30;
+  /**
+   * @var string
+   */
+  protected $server;
+
 
   /**
    * Constructor
@@ -278,7 +283,7 @@ class XMPPHP_XMLStream {
   /**
    * Add Event Handler
    *
-   * @param integer $id
+   * @param int $id
    * @param string  $pointer
    * @param string  $obj
    */
@@ -286,13 +291,13 @@ class XMPPHP_XMLStream {
     $this->eventhandlers[] = array($name, $pointer, $obj);
   }
 
-  /**
-   * Connect to XMPP Host
-   *
-   * @param integer $timeout
-   * @param boolean $persistent
-   * @param boolean $sendinit
-   */
+    /**
+     * Connect to XMPP Server
+     * @param int $timeout
+     * @param bool $persistent
+     * @param bool $sendinit
+     * @throws XMPPHP_Exception
+     */
   public function connect($timeout = 30, $persistent = false, $sendinit = true) {
     $this->sent_disconnect = false;
     $starttime = time();
@@ -308,9 +313,9 @@ class XMPPHP_XMLStream {
       $conntype = 'tcp';
       if ($this->use_ssl)
         $conntype = 'ssl';
-      $this->log->log("Connecting to $conntype://{$this->host}:{$this->port}");
+      $this->log->log("Connecting to $conntype://{$this->server}:{$this->port}");
       try {
-        $this->socket = @stream_socket_client("$conntype://{$this->host}:{$this->port}", $errno, $errstr, $timeout, $conflag);
+        $this->socket = @stream_socket_client("$conntype://{$this->server}:{$this->port}", $errno, $errstr, $timeout, $conflag);
       } catch (Exception $e) {
         throw new XMPPHP_Exception($e->getMessage());
       }
@@ -323,8 +328,10 @@ class XMPPHP_XMLStream {
     } while (!$this->socket && (time() - $starttime) < $timeout);
 
     if ($this->socket) {
-      stream_set_blocking($this->socket, 1);
-      stream_context_set_option($this->socket, 'ssl', 'verify_peer', false);
+        stream_set_blocking($this->socket, 1);
+        stream_context_set_option($this->socket, 'ssl', 'allow_self_signed', true);
+        stream_context_set_option($this->socket, 'ssl', 'verify_peer', false);
+        stream_context_set_option($this->socket, 'ssl', 'verify_peer_name', false);
       if ($sendinit)
         $this->send($this->stream_start);
     } else {
