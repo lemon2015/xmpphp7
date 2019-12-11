@@ -171,7 +171,7 @@ class XMPPHP_XMLStream {
   /**
    * @var string
    */
-  protected $server;
+  public $server;
 
 
   /**
